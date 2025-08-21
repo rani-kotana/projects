@@ -1,0 +1,64 @@
+#include <Servo.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <NewPing.h>
+#define TRIGGER_PIN  12  
+#define ECHO_PIN     11  
+#define MAX_DISTANCE 200 
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); 
+
+#define IR_PIN 6
+#define GAS_PIN 7
+#define BUZZER_PIN 13
+#define SERVO_PIN 9
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+Servo servo;
+int a,b,c;
+void setup() {
+  Serial.begin(9600);
+  pinMode(IR_PIN,INPUT);
+  pinMode(GAS_PIN,INPUT);
+  pinMode(BUZZER_PIN,OUTPUT);
+  servo.attach(SERVO_PIN);
+  servo.write(0);
+  lcd.begin(16, 2);
+  lcd.backlight();
+  lcd.setCursor(0, 0);
+  lcd.print(" Smart Dustbin ");
+  delay(2000);
+}
+void loop() {                    
+  int a=sonar.ping_cm();
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Level: ");
+  lcd.print(sonar.ping_cm());
+  lcd.print("cm");
+  
+  int b=digitalRead(IR_PIN);
+  int c=digitalRead(GAS_PIN);
+  lcd.setCursor(0, 1);
+  if(c==0)
+  {
+    digitalWrite(BUZZER_PIN,HIGH);
+    lcd.print("Gas: ALERT!");
+  }
+  else
+  {
+    digitalWrite(BUZZER_PIN,LOW);
+    lcd.print("Gas: Normal ");
+  }
+  if(b==0)
+  {
+    servo.write(45);    
+    delay(2000);
+    servo.write(0);
+  }
+  Serial.print("Distance=  ");
+  Serial.println(a); 
+  Serial.print("IR Value= ");
+  Serial.println(b);
+  Serial.print("Gas Value= ");
+  Serial.println(c);
+}
